@@ -1,0 +1,11 @@
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'; import { useApi, download, errMsg } from '../api.js'; import { Card, Skeleton, ErrorBox, Empty, Btn, useToast } from '../ui.jsx';
+const Chart = ({ title, data, keys }) => <Card title={title}><ResponsiveContainer height={240}><BarChart data={data}><XAxis dataKey="run" tick={{ fontSize: 11 }} /><YAxis /><Tooltip /><Legend />{keys.map(([k, c]) => <Bar key={k} dataKey={k} fill={c} />)}</BarChart></ResponsiveContainer></Card>;
+export default function Reports() {
+  const { data: runs, loading, error, reload } = useApi('/reconciliation/runs'); const counts = ['OPEN', 'INVESTIGATING', 'RESOLVED', 'IGNORED'].map((s) => useApi('/exceptions', { status: s, pageSize: 1 })); const toast = useToast();
+  if (loading) return <Skeleton />; if (error) return <ErrorBox msg={error} retry={reload} />; if (!runs.length) return <Empty text="Run a reconciliation to see reports" />;
+  const rows = [...runs].reverse().map((r) => ({ run: r.runId, matchRate: r.matchRate, exceptions: r.exceptionCount, discrepancy: r.totalDiscrepancyMinor / 100, ...r.exceptionsByType }));
+  const types = [...new Set(runs.flatMap((r) => Object.keys(r.exceptionsByType)))], pal = ['#2563eb', '#dc2626', '#d97706', '#16a34a', '#7c3aed', '#0891b2', '#db2777']; const [o, i, r, g] = counts.map((c) => c.meta?.total ?? 0);
+  return <div className="space-y-4"><div className="flex items-center"><h1 className="text-xl font-semibold mr-auto">Reports</h1><Btn kind="ghost" onClick={() => download('/reports/exceptions.csv').catch((e) => toast(errMsg(e), true))}>Download all exceptions (CSV)</Btn></div>
+    <div className="grid lg:grid-cols-2 gap-4"><Chart title="Match rate by run (%)" data={rows} keys={[['matchRate', '#16a34a']]} /><Chart title="Exception count by run" data={rows} keys={[['exceptions', '#dc2626']]} /><Chart title="Amount discrepancy by run (₹)" data={rows} keys={[['discrepancy', '#d97706']]} /><Chart title="Resolved vs unresolved (all runs)" data={[{ run: 'All', Unresolved: o + i, Resolved: r, Ignored: g }]} keys={[['Unresolved', '#dc2626'], ['Resolved', '#16a34a'], ['Ignored', '#94a3b8']]} /></div>
+    <Chart title="Exception types by run" data={rows} keys={types.map((t, n) => [t, pal[n % 7]])} /></div>;
+}

@@ -1,0 +1,12 @@
+import { useState } from 'react'; import { NavLink, Routes, Route } from 'react-router-dom'; import { LayoutDashboard, Play, ArrowLeftRight, AlertOctagon, FileBarChart, Settings as Cog, Menu, Bell, User } from 'lucide-react';
+import { useApi } from './api.js'; import { Badge } from './ui.jsx'; import Overview from './pages/Overview.jsx'; import Runs from './pages/Runs.jsx'; import Transactions from './pages/Transactions.jsx'; import Exceptions from './pages/Exceptions.jsx'; import Reports from './pages/Reports.jsx'; import Settings from './pages/Settings.jsx';
+const NAV = [['/', 'Overview', LayoutDashboard], ['/runs', 'Reconciliation Runs', Play], ['/transactions', 'Transactions', ArrowLeftRight], ['/exceptions', 'Exceptions', AlertOctagon], ['/reports', 'Reports', FileBarChart], ['/settings', 'Settings', Cog]];
+export default function App() {
+  const [open, setOpen] = useState(true); const { data } = useApi('/dashboard/summary'); const run = data?.latestRun;
+  return <div className="min-h-screen flex">
+    <nav aria-label="Main" className={`${open ? 'w-56' : 'w-14'} bg-navy text-slate-300 shrink-0 transition-all`}><div className="p-4 font-bold text-white">{open ? 'ReconFlow' : 'RF'}</div>
+      {NAV.map(([to, label, I]) => <NavLink key={to} to={to} end={to === '/'} title={label} className={({ isActive }) => `flex items-center gap-3 px-4 py-2.5 text-sm ${isActive ? 'bg-blue-600 text-white' : 'hover:bg-white/10'}`}><I size={18} />{open && label}</NavLink>)}</nav>
+    <div className="flex-1 min-w-0"><header className="h-14 bg-white border-b flex items-center gap-3 px-4"><button aria-label="Toggle sidebar" onClick={() => setOpen(!open)}><Menu size={20} /></button>
+      <span className="text-sm text-slate-500 hidden sm:block">Latest run: {run ? <>{run.runId} <Badge v={run.status} /></> : 'none yet'}</span><div className="ml-auto flex items-center gap-4 text-slate-500"><Bell size={18} aria-label="Notifications" /><span className="flex items-center gap-1 text-sm"><User size={18} />Finance Ops</span></div></header>
+      <main className="p-4 md:p-6"><Routes><Route path="/" element={<Overview />} /><Route path="/runs" element={<Runs />} /><Route path="/transactions" element={<Transactions />} /><Route path="/exceptions" element={<Exceptions />} /><Route path="/reports" element={<Reports />} /><Route path="/settings" element={<Settings />} /></Routes></main></div></div>;
+}

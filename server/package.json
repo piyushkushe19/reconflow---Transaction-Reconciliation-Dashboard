@@ -1,0 +1,24 @@
+{
+ "name": "reconflow-server",
+ "version": "0.1.0",
+ "type": "module",
+ "scripts": {
+  "test": "vitest run",
+  "seed:preview": "node scripts/preview.js",
+  "start": "node src/server.js",
+  "seed": "node scripts/seed.js"
+ },
+ "devDependencies": {
+  "supertest": "^7.3.1",
+  "vitest": "^2.1.8"
+ },
+ "dependencies": {
+  "cors": "^2.8.6",
+  "dotenv": "^18.0.9",
+  "express": "^5.3.0",
+  "express-rate-limit": "^8.7.1",
+  "helmet": "^8.3.0",
+  "mongoose": "^9.11.4",
+  "zod": "^4.6.7"
+ }
+}
